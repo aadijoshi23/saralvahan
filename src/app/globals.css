@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #fbfcf8;
+  color: #172217;
+}
+
+::selection {
+  background: #dfeee0;
+  color: #194d28;
+}
