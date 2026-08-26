@@ -2,28 +2,35 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import DocumentCard from '@/components/DocumentCard';
 import Header from '@/components/Header';
 import PrototypeNotice from '@/components/PrototypeNotice';
-import { READINESS_STORAGE_KEY, RENEWAL_STORAGE_KEY, defaultRenewalAnswers, formatExpiryStatus, formatLicenceType, getRequirements, normalizeRenewalAnswers } from '@/data/requirementsRules';
+import { READINESS_STORAGE_KEY, RENEWAL_STORAGE_KEY, defaultRenewalAnswers, formatExpiryStatus, formatLicenceType, getRequirements, hasCompleteRenewalAnswers, normalizeRenewalAnswers } from '@/data/requirementsRules';
 
 export default function RequirementsPage() {
+  const router = useRouter();
   const [answers, setAnswers] = useState(defaultRenewalAnswers);
   const [readiness, setReadiness] = useState({});
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     try {
-      setAnswers(normalizeRenewalAnswers(JSON.parse(localStorage.getItem(RENEWAL_STORAGE_KEY))));
+      const savedAnswers = normalizeRenewalAnswers(JSON.parse(localStorage.getItem(RENEWAL_STORAGE_KEY)));
+      if (!hasCompleteRenewalAnswers(savedAnswers)) {
+        router.replace('/renewal');
+        return;
+      }
+      setAnswers(savedAnswers);
       const savedReadiness = JSON.parse(localStorage.getItem(READINESS_STORAGE_KEY));
       if (savedReadiness && typeof savedReadiness === 'object') setReadiness(savedReadiness);
-    } catch { setAnswers(defaultRenewalAnswers); }
+    } catch { router.replace('/renewal'); }
     finally { setLoaded(true); }
-  }, []);
+  }, [router]);
 
   const requirements = useMemo(() => getRequirements(answers, readiness), [answers, readiness]);
   const readyCount = requirements.filter((item) => item.readinessStatus === 'ready').length;
-  const allReady = loaded && requirements.every((item) => item.readinessStatus === 'ready');
+  const allReady = loaded && requirements.every((item) => !item.required || item.readinessStatus === 'ready');
   const markReady = (id) => setReadiness((current) => {
     const next = { ...current, [id]: 'ready' };
     localStorage.setItem(READINESS_STORAGE_KEY, JSON.stringify(next));

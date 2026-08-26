@@ -1,6 +1,9 @@
 export const RENEWAL_STORAGE_KEY = 'saralvahan-renewal';
 export const READINESS_STORAGE_KEY = 'saralvahan-requirements-readiness';
 
+const validLicenceTypes = ['private', 'commercial'];
+const validExpiryStatuses = ['not-expired', 'recently-expired', 'expired-over-year'];
+
 const requirementDefinitions = [
   { id: 'driving-licence', title: 'Existing Driving Licence', explanation: 'Keep your current driving licence available so its details can be checked.', required: true, reason: 'It identifies the licence you want to renew.', defaultReady: true },
   { id: 'identity-address-proof', title: 'Identity / Address Proof', explanation: 'A valid identity or address document may be used to confirm your details.', required: true, reason: 'This helps confirm your identity and current address.', defaultReady: true },
@@ -16,25 +19,44 @@ const requirementDefinitions = [
   },
 ];
 
-export const defaultRenewalAnswers = { age: 47, state: 'Uttarakhand', licenceType: 'private', expiryStatus: 'not-expired' };
+export const defaultRenewalAnswers = { age: '', state: '', licenceType: '', expiryStatus: '' };
 
 export function normalizeRenewalAnswers(value) {
   if (!value || typeof value !== 'object') return defaultRenewalAnswers;
   const age = Number(value.age);
   return {
-    age: Number.isFinite(age) && age > 0 ? age : defaultRenewalAnswers.age,
-    state: typeof value.state === 'string' && value.state.trim() ? value.state.trim() : defaultRenewalAnswers.state,
-    licenceType: typeof value.licenceType === 'string' && value.licenceType ? value.licenceType : defaultRenewalAnswers.licenceType,
-    expiryStatus: typeof value.expiryStatus === 'string' && value.expiryStatus ? value.expiryStatus : defaultRenewalAnswers.expiryStatus,
+    age: Number.isInteger(age) && age >= 18 && age <= 120 ? age : '',
+    state: typeof value.state === 'string' ? value.state.trim() : '',
+    licenceType: validLicenceTypes.includes(value.licenceType) ? value.licenceType : '',
+    expiryStatus: validExpiryStatuses.includes(value.expiryStatus) ? value.expiryStatus : '',
   };
+}
+
+export function hasCompleteRenewalAnswers(answers) {
+  return Boolean(answers.age && answers.state && answers.licenceType && answers.expiryStatus);
 }
 
 export function getRequirements(answers, readiness = {}) {
   return requirementDefinitions.map((item) => {
     const required = item.required ?? Boolean(item.requiredWhen?.(answers));
-    if (!required) return null;
-    return { id: item.id, title: item.title, explanation: item.explanation, required, reason: item.reason ?? item.reasonWhen(answers), readinessStatus: readiness[item.id] ?? (item.defaultReady ? 'ready' : 'missing') };
-  }).filter(Boolean);
+    const savedStatus = readiness[item.id];
+    const readinessStatus = savedStatus === 'ready' || savedStatus === 'missing'
+      ? savedStatus
+      : item.defaultReady ? 'ready' : 'missing';
+
+    return {
+      id: item.id,
+      title: item.title,
+      explanation: required
+        ? item.explanation
+        : 'You do not need a medical certificate for this prototype based on the answers you provided.',
+      required,
+      reason: required
+        ? item.reason ?? item.reasonWhen(answers)
+        : 'This prototype only asks for Form 1A when the applicant is 40 or older or has a commercial licence.',
+      readinessStatus: required ? readinessStatus : 'ready',
+    };
+  });
 }
 
 export function formatLicenceType(value) {
@@ -42,6 +64,10 @@ export function formatLicenceType(value) {
 }
 
 export function formatExpiryStatus(value) {
-  const labels = { 'not-expired': 'Not expired', expired: 'Expired', 'expired-under-1-year': 'Expired less than 1 year', 'expired-over-1-year': 'Expired over 1 year' };
+  const labels = {
+    'not-expired': 'Not expired',
+    'recently-expired': 'Expired recently',
+    'expired-over-year': 'Expired more than one year ago',
+  };
   return labels[value] ?? value?.replaceAll('-', ' ') ?? 'Not provided';
 }
