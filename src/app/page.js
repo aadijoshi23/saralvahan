@@ -24,7 +24,7 @@ export default function Home() {
                 We’ll guide you through the requirements, documents, application, and next steps—one clear step at a time.
               </p>
               <div className="mt-9">
-                <PrimaryButton href="#how-it-works">Start Renewal</PrimaryButton>
+                <PrimaryButton href="/renewal">Start Renewal</PrimaryButton>
               </div>
               <p className="mt-4 text-sm text-stone-500">Takes about 5 minutes to get started</p>
             </div>
