@@ -3,13 +3,17 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
+import JourneyProgress from '@/components/JourneyProgress';
+import PrerequisiteState from '@/components/PrerequisiteState';
 import { APPOINTMENT_STORAGE_KEY } from '@/data/appointmentData';
+import { DEMO_APPLICATION_STORAGE_KEY } from '@/data/applicationData';
 import { READINESS_STORAGE_KEY, RENEWAL_STORAGE_KEY } from '@/data/requirementsRules';
 
 const journeyKeys = [
   RENEWAL_STORAGE_KEY,
   READINESS_STORAGE_KEY,
   APPOINTMENT_STORAGE_KEY,
+  DEMO_APPLICATION_STORAGE_KEY,
   'saralvahan-application',
   'saralvahan-application-data',
   'saralvahan-application-id',
@@ -20,7 +24,7 @@ function readApplicationId() {
   const direct = localStorage.getItem('saralvahan-application-id');
   if (direct) return direct.replace(/^"|"$/g, '');
 
-  for (const key of ['saralvahan-application', 'saralvahan-application-data', 'saralvahan-review']) {
+  for (const key of [DEMO_APPLICATION_STORAGE_KEY, 'saralvahan-application', 'saralvahan-application-data', 'saralvahan-review']) {
     try {
       const value = JSON.parse(localStorage.getItem(key));
       const id = value?.applicationId ?? value?.applicationID ?? value?.id;
@@ -36,6 +40,7 @@ export default function SuccessPage() {
   const router = useRouter();
   const [details, setDetails] = useState(null);
   const [applicationId, setApplicationId] = useState('');
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     try {
@@ -43,14 +48,20 @@ export default function SuccessPage() {
       setApplicationId(readApplicationId());
     } catch {
       setDetails(null);
+    } finally {
+      setLoaded(true);
     }
   }, []);
 
   function startAnotherRenewal() {
     journeyKeys.forEach((key) => localStorage.removeItem(key));
     sessionStorage.removeItem('saralvahan-renewal-step');
+    localStorage.removeItem('saralvahan-renewal-step');
     router.push('/renewal');
   }
+
+  if (!loaded) return <div className="min-h-screen bg-[#fbfcf8]"><Header /><main className="mx-auto max-w-3xl px-5 py-12" aria-label="Loading appointment summary" /></div>;
+  if (!details?.dateId || !details?.time) return <PrerequisiteState title="Choose an appointment first" message="Your completion summary will be available after you select and confirm a demo appointment." href="/appointment" action="Choose an appointment" />;
 
   const carryItems = [
     'Your original driving licence',
@@ -64,6 +75,7 @@ export default function SuccessPage() {
     <div className="min-h-screen bg-[#fbfcf8]">
       <Header />
       <main className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8 sm:py-16">
+        <JourneyProgress current={6} />
         <section aria-labelledby="success-heading" className="overflow-hidden rounded-3xl border border-leaf-100 bg-white shadow-soft">
           <div className="bg-leaf-800 px-5 py-9 text-center text-white sm:px-8 sm:py-12">
             <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-white text-leaf-700" aria-hidden="true">

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
+import JourneyProgress from '@/components/JourneyProgress';
+import PrerequisiteState from '@/components/PrerequisiteState';
 import PrototypeNotice from '@/components/PrototypeNotice';
 import {
   APPOINTMENT_STORAGE_KEY,
@@ -13,6 +15,7 @@ import {
   getDemoRto,
 } from '@/data/appointmentData';
 import { RENEWAL_STORAGE_KEY, normalizeRenewalAnswers } from '@/data/requirementsRules';
+import { DEMO_APPLICATION_STORAGE_KEY } from '@/data/applicationData';
 
 export default function AppointmentPage() {
   const router = useRouter();
@@ -20,10 +23,17 @@ export default function AppointmentPage() {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [loaded, setLoaded] = useState(false);
+  const [missingPrerequisite, setMissingPrerequisite] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   useEffect(() => {
     try {
       const renewal = normalizeRenewalAnswers(JSON.parse(localStorage.getItem(RENEWAL_STORAGE_KEY)));
+      const submitted = JSON.parse(localStorage.getItem(DEMO_APPLICATION_STORAGE_KEY));
+      if (submitted?.status !== 'submitted-demo' || !submitted?.applicationId) {
+        setMissingPrerequisite(true);
+        return;
+      }
       const saved = JSON.parse(localStorage.getItem(APPOINTMENT_STORAGE_KEY));
       setState(renewal.state);
       if (saved && appointmentSlots[saved.dateId]?.some((slot) => slot.time === saved.time && slot.available)) {
@@ -31,7 +41,7 @@ export default function AppointmentPage() {
         setSelectedTime(saved.time);
       }
     } catch {
-      // Invalid prototype data is ignored so the citizen can choose again.
+      setMissingPrerequisite(true);
     } finally {
       setLoaded(true);
     }
@@ -58,14 +68,18 @@ export default function AppointmentPage() {
       day: date.day,
       time: selectedTime,
     }));
+    setIsConfirming(true);
     router.push('/success');
   }
+
+  if (loaded && missingPrerequisite) return <PrerequisiteState title="Submit the demo application first" message="Review and submit the demo application before choosing an appointment." href="/review" action="Go to application review" />;
 
   return (
     <div className="min-h-screen bg-[#fbfcf8]">
       <Header />
       <main>
         <section className="mx-auto w-full max-w-3xl px-5 py-8 sm:px-8 sm:py-12">
+          <JourneyProgress current={5} />
           <Link href="/review" className="inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-semibold text-leaf-800 hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-leaf-100">
             <span aria-hidden="true">←</span> Back to review
           </Link>
@@ -130,7 +144,7 @@ export default function AppointmentPage() {
 
             <div className="mt-9 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
               <Link href="/review" className="inline-flex min-h-14 items-center justify-center rounded-xl border-2 border-stone-200 bg-white px-6 py-3 text-base font-bold text-ink transition hover:border-stone-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-leaf-100 sm:min-w-36">Back</Link>
-              <button type="submit" disabled={!selectedDate || !selectedTime} className="min-h-14 rounded-xl bg-leaf-700 px-7 py-3 text-base font-bold text-white shadow-lg shadow-leaf-800/15 transition hover:bg-leaf-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-leaf-100 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:shadow-none sm:min-w-56">Confirm appointment</button>
+              <button type="submit" disabled={!selectedDate || !selectedTime || isConfirming} className="min-h-14 rounded-xl bg-leaf-700 px-7 py-3 text-base font-bold text-white shadow-lg shadow-leaf-800/15 transition hover:bg-leaf-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-leaf-100 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:shadow-none sm:min-w-56">{isConfirming ? 'Saving appointment…' : 'Confirm appointment'}</button>
             </div>
           </form>
         </section>

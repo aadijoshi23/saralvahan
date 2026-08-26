@@ -16,6 +16,18 @@ body {
   color: #172217;
 }
 
+button, a, input, select, textarea {
+  overflow-wrap: anywhere;
+}
+
+button, a, label, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  scroll-margin-block: 7rem;
+}
+
 ::selection {
   background: #dfeee0;
   color: #194d28;

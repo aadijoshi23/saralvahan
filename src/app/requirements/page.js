@@ -2,31 +2,32 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import DocumentCard from '@/components/DocumentCard';
 import Header from '@/components/Header';
+import JourneyProgress from '@/components/JourneyProgress';
+import PrerequisiteState from '@/components/PrerequisiteState';
 import PrototypeNotice from '@/components/PrototypeNotice';
 import { READINESS_STORAGE_KEY, RENEWAL_STORAGE_KEY, defaultRenewalAnswers, formatExpiryStatus, formatLicenceType, getRequirements, hasCompleteRenewalAnswers, normalizeRenewalAnswers } from '@/data/requirementsRules';
 
 export default function RequirementsPage() {
-  const router = useRouter();
   const [answers, setAnswers] = useState(defaultRenewalAnswers);
   const [readiness, setReadiness] = useState({});
   const [loaded, setLoaded] = useState(false);
+  const [missingPrerequisite, setMissingPrerequisite] = useState(false);
 
   useEffect(() => {
     try {
       const savedAnswers = normalizeRenewalAnswers(JSON.parse(localStorage.getItem(RENEWAL_STORAGE_KEY)));
       if (!hasCompleteRenewalAnswers(savedAnswers)) {
-        router.replace('/renewal');
+        setMissingPrerequisite(true);
         return;
       }
       setAnswers(savedAnswers);
       const savedReadiness = JSON.parse(localStorage.getItem(READINESS_STORAGE_KEY));
       if (savedReadiness && typeof savedReadiness === 'object') setReadiness(savedReadiness);
-    } catch { router.replace('/renewal'); }
+    } catch { setMissingPrerequisite(true); }
     finally { setLoaded(true); }
-  }, [router]);
+  }, []);
 
   const requirements = useMemo(() => getRequirements(answers, readiness), [answers, readiness]);
   const readyCount = requirements.filter((item) => item.readinessStatus === 'ready').length;
@@ -38,11 +39,15 @@ export default function RequirementsPage() {
   });
   const summary = [['Age', `${answers.age} years`], ['State', answers.state], ['Licence', formatLicenceType(answers.licenceType)], ['Expiry', formatExpiryStatus(answers.expiryStatus)]];
 
+  if (!loaded) return <div className="min-h-screen bg-[#fbfcf8]"><Header /><main className="mx-auto max-w-3xl px-5 py-12" aria-label="Loading requirements" /></div>;
+  if (missingPrerequisite) return <PrerequisiteState title="Answer the renewal questions first" message="We need your age, issuing state, licence type, and expiry status before we can prepare the right checklist." href="/renewal" action="Go to renewal questions" />;
+
   return (
     <div className="min-h-screen bg-[#fbfcf8]">
       <Header />
       <main>
         <section className="mx-auto max-w-3xl px-5 py-10 sm:px-8 sm:py-14">
+          <JourneyProgress current={2} />
           <Link href="/renewal" className="inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-semibold text-leaf-800 hover:underline focus:outline-none focus-visible:ring-4 focus-visible:ring-leaf-100"><span aria-hidden="true">←</span> Back to renewal</Link>
           <div className="mt-5">
             <p className="text-sm font-bold uppercase tracking-wider text-leaf-700">Personalised checklist</p>

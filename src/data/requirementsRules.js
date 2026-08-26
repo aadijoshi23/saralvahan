@@ -59,6 +59,11 @@ export function getRequirements(answers, readiness = {}) {
   });
 }
 
+export function hasReadyRequirements(answers, readiness = {}) {
+  return hasCompleteRenewalAnswers(answers)
+    && getRequirements(answers, readiness).every((item) => !item.required || item.readinessStatus === 'ready');
+}
+
 export function formatLicenceType(value) {
   return value ? `${value.charAt(0).toUpperCase()}${value.slice(1)}` : 'Not provided';
 }

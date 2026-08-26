@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
+import Link from 'next/link';
+import JourneyProgress from '@/components/JourneyProgress';
 import ProgressBar from '@/components/ProgressBar';
 import QuestionCard from '@/components/QuestionCard';
 import { expiryOptions, licenceTypeOptions, states } from '@/data/renewalData';
@@ -31,7 +33,7 @@ export default function RenewalPage() {
         setAnswers({ ...initialAnswers, ...savedAnswers });
       }
 
-      const savedStep = Number(sessionStorage.getItem(STEP_KEY));
+      const savedStep = Number(localStorage.getItem(STEP_KEY) ?? sessionStorage.getItem(STEP_KEY));
       if (Number.isInteger(savedStep) && savedStep >= 0 && savedStep < 4) {
         setStep(savedStep);
       }
@@ -49,7 +51,7 @@ export default function RenewalPage() {
       licenceType: answers.licenceType,
       expiryStatus: answers.expiryStatus,
     }));
-    sessionStorage.setItem(STEP_KEY, String(step));
+    localStorage.setItem(STEP_KEY, String(step));
   }, [answers, isReady, step]);
 
   const currentAnswerIsValid = [
@@ -76,6 +78,7 @@ export default function RenewalPage() {
       licenceType: answers.licenceType,
       expiryStatus: answers.expiryStatus,
     }));
+    localStorage.removeItem(STEP_KEY);
     sessionStorage.removeItem(STEP_KEY);
     router.push('/requirements');
   }
@@ -138,19 +141,13 @@ export default function RenewalPage() {
     <div className="min-h-screen bg-[#fbfcf8]">
       <Header />
       <main className="mx-auto w-full max-w-3xl px-5 py-8 sm:px-8 sm:py-12">
+        <JourneyProgress current={1} />
         <ProgressBar currentStep={step + 1} totalSteps={4} />
         <form onSubmit={(event) => { event.preventDefault(); continueQuestionnaire(); }} className="mt-7 sm:mt-9">
           {isReady ? questions[step] : <div className="min-h-72" aria-label="Loading your answers" />}
 
           <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-            <button
-              type="button"
-              onClick={() => setStep((current) => current - 1)}
-              disabled={step === 0}
-              className="min-h-14 rounded-xl border-2 border-stone-200 bg-white px-6 py-3 text-base font-bold text-ink transition hover:border-stone-300 disabled:cursor-not-allowed disabled:opacity-40 sm:min-w-36"
-            >
-              Back
-            </button>
+            {step === 0 ? <Link href="/" className="inline-flex min-h-14 items-center justify-center rounded-xl border-2 border-stone-200 bg-white px-6 py-3 text-base font-bold text-ink transition hover:border-stone-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-leaf-100 sm:min-w-36">Back to home</Link> : <button type="button" onClick={() => setStep((current) => current - 1)} className="min-h-14 rounded-xl border-2 border-stone-200 bg-white px-6 py-3 text-base font-bold text-ink transition hover:border-stone-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-leaf-100 sm:min-w-36">Back</button>}
             <button
               type="submit"
               disabled={!isReady || !currentAnswerIsValid}
@@ -159,6 +156,7 @@ export default function RenewalPage() {
               {step === 3 ? 'See requirements' : 'Continue'}
             </button>
           </div>
+          {isReady && !currentAnswerIsValid && <p className="mt-3 text-center text-sm font-semibold text-stone-600" aria-live="polite">Choose or enter a valid answer to continue.</p>}
         </form>
         <p className="mt-8 text-center text-sm leading-6 text-stone-500">Your answers are saved on this device so you can continue later.</p>
       </main>

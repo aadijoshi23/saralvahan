@@ -2,6 +2,7 @@ import Header from '@/components/Header';
 import PrimaryButton from '@/components/PrimaryButton';
 import PrototypeNotice from '@/components/PrototypeNotice';
 import RenewalSteps from '@/components/RenewalSteps';
+import ResumeRenewal from '@/components/ResumeRenewal';
 
 export default function Home() {
   return (
@@ -26,6 +27,7 @@ export default function Home() {
               <div className="mt-9">
                 <PrimaryButton href="/renewal">Start Renewal</PrimaryButton>
               </div>
+              <ResumeRenewal />
               <p className="mt-4 text-sm text-stone-500">Takes about 5 minutes to get started</p>
             </div>
 
