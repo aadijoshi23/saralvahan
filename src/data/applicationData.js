@@ -31,7 +31,7 @@ export function validateApplication(values) {
   return errors;
 }
 
-export function formatDate(value) {
+export function formatDate(value, language = 'en') {
   if (!value) return 'Not provided';
-  return new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
+  return new Intl.DateTimeFormat(language === 'hi' ? 'hi-IN' : 'en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
 }

@@ -5,11 +5,11 @@ const validLicenceTypes = ['private', 'commercial'];
 const validExpiryStatuses = ['not-expired', 'recently-expired', 'expired-over-year'];
 
 const requirementDefinitions = [
-  { id: 'driving-licence', title: 'Existing Driving Licence', explanation: 'Keep your current driving licence available so its details can be checked.', required: true, reason: 'It identifies the licence you want to renew.', defaultReady: true },
+  { id: 'driving-licence', title: 'Existing Driving Licence', explainTerms: ['Driving Licence Number'], explanation: 'Keep your current driving licence available so its details can be checked.', required: true, reason: 'It identifies the licence you want to renew.', defaultReady: true },
   { id: 'identity-address-proof', title: 'Identity / Address Proof', explanation: 'A valid identity or address document may be used to confirm your details.', required: true, reason: 'This helps confirm your identity and current address.', defaultReady: true },
   { id: 'photograph', title: 'Photograph', explanation: 'A recent passport-style photograph may be requested for the renewed licence.', required: true, reason: 'A current photograph is needed for the licence record.', defaultReady: true },
   {
-    id: 'medical-certificate', title: 'Medical Certificate / Form 1A',
+    id: 'medical-certificate', title: 'Medical Certificate / Form 1A', explainTerms: ['Medical Certificate', 'Form 1A'],
     explanation: 'For this prototype, Form 1A is included for applicants aged 40 or above or for non-private licences.',
     requiredWhen: ({ age, licenceType }) => age >= 40 || licenceType !== 'private',
     reasonWhen: ({ age, licenceType }) => age >= 40
@@ -47,6 +47,7 @@ export function getRequirements(answers, readiness = {}) {
     return {
       id: item.id,
       title: item.title,
+      explainTerms: item.explainTerms ?? [],
       explanation: required
         ? item.explanation
         : 'You do not need a medical certificate for this prototype based on the answers you provided.',

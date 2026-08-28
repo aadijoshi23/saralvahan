@@ -1,4 +1,7 @@
+'use client';
+import { useLanguage } from '@/i18n/LanguageProvider';
 export default function PrototypeNotice() {
+  const { t } = useLanguage();
   return (
     <aside className="border-y border-amber-200 bg-amber-50" aria-label="Prototype notice">
       <div className="mx-auto flex max-w-6xl items-start gap-3 px-5 py-5 sm:items-center sm:px-8 lg:px-10">
@@ -7,7 +10,7 @@ export default function PrototypeNotice() {
           <path d="M12 11v5m0-8v.1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
         <p className="text-sm leading-6 text-amber-950 sm:text-base">
-          <strong>Prototype only:</strong> This experience uses simulated government services and synthetic data. It does not submit a real application.
+          <strong>{t('Prototype only:')}</strong> {t('This experience uses simulated government services and synthetic data. It does not submit a real application.')}
         </p>
       </div>
     </aside>

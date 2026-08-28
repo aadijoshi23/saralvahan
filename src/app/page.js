@@ -1,9 +1,12 @@
+'use client';
 import Header from '@/components/Header';
 import PrimaryButton from '@/components/PrimaryButton';
 import PrototypeNotice from '@/components/PrototypeNotice';
 import RenewalSteps from '@/components/RenewalSteps';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 export default function Home() {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen bg-[#fbfcf8]">
       <Header />
@@ -15,18 +18,18 @@ export default function Home() {
             <div className="max-w-3xl">
               <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-leaf-100 bg-white px-3 py-1.5 text-sm font-semibold text-leaf-800 shadow-sm">
                 <span className="h-2 w-2 rounded-full bg-saffron" aria-hidden="true" />
-                Driving licence renewal, made easier
+                {t('Driving licence renewal, made easier')}
               </div>
               <h1 className="text-4xl font-extrabold leading-[1.1] tracking-[-0.035em] text-ink sm:text-5xl lg:text-6xl">
-                Renew your driving licence without the confusion.
+                {t('Renew your driving licence without the confusion.')}
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-600 sm:text-xl sm:leading-9">
-                We’ll guide you through the requirements, documents, application, and next steps—one clear step at a time.
+                {t('We’ll guide you through the requirements, documents, application, and next steps—one clear step at a time.')}
               </p>
               <div className="mt-9">
-                <PrimaryButton href="/renewal">Start Renewal</PrimaryButton>
+                <PrimaryButton href="/renewal">{t('Start Renewal')}</PrimaryButton>
               </div>
-              <p className="mt-4 text-sm text-stone-500">Takes about 5 minutes to get started</p>
+              <p className="mt-4 text-sm text-stone-500">{t('Takes about 5 minutes to get started')}</p>
             </div>
 
             <div className="relative mx-auto w-full max-w-md lg:ml-auto" aria-hidden="true">
@@ -64,7 +67,7 @@ export default function Home() {
       </main>
 
       <footer className="mx-auto max-w-6xl px-5 py-8 text-center text-sm text-stone-500 sm:px-8 lg:px-10">
-        SaralVahan · A citizen-first service prototype
+        SaralVahan · {t('A citizen-first service prototype')}
       </footer>
     </div>
   );
