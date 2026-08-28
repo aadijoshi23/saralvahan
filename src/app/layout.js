@@ -1,4 +1,5 @@
 import './globals.css';
+import { LanguageProvider } from '@/i18n/LanguageProvider';
 
 export const metadata = {
   title: 'SaralVahan | Driving licence renewal made simple',
@@ -9,7 +10,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased"><LanguageProvider>{children}</LanguageProvider></body>
     </html>
   );
 }
